@@ -9,6 +9,7 @@ Official [Homebrew](https://brew.sh/) tap for developer tools and menu bar utili
 | Formula | Description | Installation |
 |---|---|---|
 | **[frugalbar](https://github.com/seankoji-com/frugalbar)** | Track AI usage & developer rate limits directly in the macOS menu bar | `brew install seankoji-com/tap/frugalbar` |
+| **[freshen](https://github.com/seankoji-com/freshen)** | High-performance TUI dashboard for multi-repo management and synchronization | `brew install seankoji-com/tap/freshen` |
 
 ---
 
@@ -23,12 +24,15 @@ brew tap seankoji-com/tap
 ```bash
 # Example: Install FrugalBar
 brew install frugalbar
+
+# Example: Install Freshen
+brew install freshen
 ```
 
 ### 3. Updating Formulae
 ```bash
 brew update
-brew upgrade frugalbar
+brew upgrade
 ```
 
 ---
