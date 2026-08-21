@@ -1,0 +1,25 @@
+name: Tap Audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Validate Formulae Syntax
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate Ruby syntax of Formulae
+        run: |
+          for f in Formula/*.rb; do
+            [ -f "$f" ] || continue
+            ruby -c "$f"
+          done
