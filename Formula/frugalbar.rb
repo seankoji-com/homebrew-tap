@@ -1,9 +1,9 @@
 class Frugalbar < Formula
   desc "Track AI usage & dev limits in the macOS menu bar"
   homepage "https://github.com/seankoji-com/frugalbar"
-  version "0.8.1"
-  url "https://github.com/seankoji-com/frugalbar/releases/download/v0.8.1/frugalbar-v0.8.1-arm64.tar.gz"
-  sha256 "de889837cc2d49bcd11735d4be481e54aebc858bda3322dc22f785e4fc70090a"
+  version "0.9.0"
+  url "https://github.com/seankoji-com/frugalbar/releases/download/v0.9.0/frugalbar-v0.9.0-arm64.tar.gz"
+  sha256 "5fdbdbc3bdc65cadb3d83eb0bbf59fce46b8c88fe77ceb2ba7e1a64431ae374a"
 
   depends_on arch: :arm64
   depends_on macos: :sequoia
