@@ -24,3 +24,23 @@ jobs:
             [ -f "$f" ] || continue
             ruby -c "$f"
           done
+
+  test:
+    timeout-minutes: 30
+    name: Test Formulae
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Test formulae
+        run: |
+          for f in Formula/*.rb; do
+            [ -f "$f" ] || continue
+            formula_name=$(basename "$f" .rb)
+            echo "Testing formula: $formula_name"
+            brew install --build-from-source "./Formula/$formula_name.rb" || {
+              echo "Failed to install $formula_name"
+              exit 1
+            }
+          done
