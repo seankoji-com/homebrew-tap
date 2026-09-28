@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -24,3 +28,46 @@ jobs:
             [ -f "$f" ] || continue
             ruby -c "$f"
           done
+
+  test:
+    needs: audit
+    timeout-minutes: 30
+    name: Test Formulae
+    # Pinned: Formula/frugalbar.rb requires macOS Sequoia on arm64.
+    runs-on: macos-15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Homebrew refuses to install formula files outside a tap, so register
+      # this checkout as the seankoji-com/tap tap and install by tap name.
+      - name: Tap this checkout
+        run: |
+          tap_dir="$(brew --repository)/Library/Taps/seankoji-com/homebrew-tap"
+          mkdir -p "$(dirname "$tap_dir")"
+          rm -rf "$tap_dir"
+          cp -R "$GITHUB_WORKSPACE" "$tap_dir"
+
+      - name: Test formulae
+        run: |
+          shopt -s nullglob
+          formulae=(Formula/*.rb)
+          if [ ${#formulae[@]} -eq 0 ]; then
+            echo "No formulae found in Formula/"
+            exit 1
+          fi
+          failed=0
+          for f in "${formulae[@]}"; do
+            formula_name=$(basename "$f" .rb)
+            echo "Testing formula: $formula_name"
+            if ! brew install --formula --build-from-source "seankoji-com/tap/$formula_name"; then
+              echo "Failed to install $formula_name"
+              failed=1
+              continue
+            fi
+            if ! brew test "seankoji-com/tap/$formula_name"; then
+              echo "brew test failed for $formula_name"
+              failed=1
+            fi
+          done
+          exit "$failed"
