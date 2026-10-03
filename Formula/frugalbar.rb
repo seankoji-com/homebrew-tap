@@ -1,7 +1,6 @@
 class Frugalbar < Formula
   desc "Track AI usage & dev limits in the macOS menu bar"
   homepage "https://github.com/seankoji-com/frugalbar"
-  version "0.13.0"
   url "https://github.com/seankoji-com/frugalbar/releases/download/v0.13.0/frugalbar-v0.13.0-arm64.tar.gz"
   sha256 "bf4d94434fa586a28706f9fa8e1f465196ad3bc1e76db2cf7a3cb896d797062f"
 
@@ -19,6 +18,6 @@ class Frugalbar < Formula
   end
 
   test do
-    system "#{bin}/frugalbar", "--help"
+    system bin/"frugalbar", "--help"
   end
 end

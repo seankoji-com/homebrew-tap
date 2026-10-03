@@ -29,6 +29,43 @@ jobs:
             ruby -c "$f"
           done
 
+  lint:
+    needs: audit
+    timeout-minutes: 15
+    name: Style and Audit Formulae
+    runs-on: macos-15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # brew style/audit only accept formulae that live inside a tap.
+      - name: Tap this checkout
+        run: |
+          tap_dir="$(brew --repository)/Library/Taps/seankoji-com/homebrew-tap"
+          mkdir -p "$(dirname "$tap_dir")"
+          rm -rf "$tap_dir"
+          cp -R "$GITHUB_WORKSPACE" "$tap_dir"
+
+      - name: Style check formulae
+        run: brew style seankoji-com/tap
+
+      # --online checks the homepage/URLs and GitHub repo metadata; the
+      # token avoids GitHub API rate limits.
+      - name: Audit formulae
+        env:
+          HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
+        run: |
+          shopt -s nullglob
+          formulae=()
+          for f in Formula/*.rb; do
+            formulae+=("seankoji-com/tap/$(basename "$f" .rb)")
+          done
+          if [ ${#formulae[@]} -eq 0 ]; then
+            echo "No formulae found in Formula/"
+            exit 1
+          fi
+          brew audit --strict --online "${formulae[@]}"
+
   test:
     needs: audit
     timeout-minutes: 30
