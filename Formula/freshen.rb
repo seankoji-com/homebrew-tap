@@ -1,7 +1,6 @@
 class Freshen < Formula
   desc "TUI dashboard for managing and syncing multi-repo setups"
   homepage "https://github.com/seankoji-com/freshen"
-  version "0.1.1"
 
   on_macos do
     if Hardware::CPU.arm?
