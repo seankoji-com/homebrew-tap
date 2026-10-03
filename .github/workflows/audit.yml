@@ -46,8 +46,20 @@ jobs:
           rm -rf "$tap_dir"
           cp -R "$GITHUB_WORKSPACE" "$tap_dir"
 
+      # Pass formula names, not the tap: `brew style <tap>` also lints the
+      # tap's workflow files with actionlint, which is out of scope here.
       - name: Style check formulae
-        run: brew style seankoji-com/tap
+        run: |
+          shopt -s nullglob
+          formulae=()
+          for f in Formula/*.rb; do
+            formulae+=("seankoji-com/tap/$(basename "$f" .rb)")
+          done
+          if [ ${#formulae[@]} -eq 0 ]; then
+            echo "No formulae found in Formula/"
+            exit 1
+          fi
+          brew style "${formulae[@]}"
 
       # --online checks the homepage/URLs and GitHub repo metadata; the
       # token avoids GitHub API rate limits.
