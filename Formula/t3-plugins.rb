@@ -11,20 +11,28 @@ class T3Plugins < Formula
   def install
     libexec.install "core", "plugins", "scripts"
 
-    python3 = formula_opt_bin("python@3.12")/"python3"
+    python3 = formula_opt_bin("python@3.12")/"python3.12"
     (bin/"t3-plugins").write <<~EOS
       #!/bin/bash
-      exec "#{python3}" "#{libexec}/scripts/install.py" "$@"
+      PYTHON="#{python3}"
+      if [ ! -x "$PYTHON" ]; then
+        PYTHON="$(command -v python3.12 || command -v python3)"
+      fi
+      exec "$PYTHON" "#{libexec}/scripts/install.py" "$@"
     EOS
 
     (bin/"imps").write <<~EOS
       #!/bin/bash
+      PYTHON="#{python3}"
+      if [ ! -x "$PYTHON" ]; then
+        PYTHON="$(command -v python3.12 || command -v python3)"
+      fi
       TARGET_VERSION="0.1.1"
       LINK="$HOME/.local/share/t3-plugins/imps/current"
       if [ ! -L "$LINK" ] || [[ "$(readlink "$LINK" 2>/dev/null)" != *"/imps/${TARGET_VERSION}"* ]]; then
-        "#{python3}" "#{libexec}/scripts/install.py" --force >/dev/null 2>&1 || true
+        "$PYTHON" "#{libexec}/scripts/install.py" --force >/dev/null 2>&1 || true
       fi
-      exec "#{python3}" "#{libexec}/plugins/imps/cli.py" "$@"
+      exec "$PYTHON" "#{libexec}/plugins/imps/cli.py" "$@"
     EOS
   end
 
