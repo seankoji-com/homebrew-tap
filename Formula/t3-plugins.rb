@@ -1,8 +1,8 @@
 class T3Plugins < Formula
   desc "Provider-neutral workflows and file tools for T3 Code"
   homepage "https://github.com/seankoji-com/t3-plugins"
-  url "https://github.com/seankoji-com/t3-plugins/releases/download/v0.3.1/t3-plugins-v0.3.1.tar.gz"
-  sha256 "1ece71969129328d4c1c7c3ce2f56097224a482e3d36f32bb33021351ca3ca6c"
+  url "https://github.com/seankoji-com/t3-plugins/releases/download/v0.4.0/t3-plugins-v0.4.0.tar.gz"
+  sha256 "91247661645558550a701576f92fed8b34a6d761c3cf7001b8a0bcde6967e574"
   license "MIT"
   head "https://github.com/seankoji-com/t3-plugins.git", branch: "master"
 
@@ -25,8 +25,9 @@ class T3Plugins < Formula
 
   def caveats
     <<~EOS
-      Install or update your user's plugin snapshots:
-        t3-plugins install
+      Install or update your user's plugin snapshots and slash-menu skills:
+        t3-plugins setup
+      Enable T3's Show skills in slash menu and restart the agent session.
       Print a prompt to paste into a T3 thread:
         t3-plugins prompt imps doctor
       Check installed file integrity:
@@ -37,6 +38,8 @@ class T3Plugins < Formula
   test do
     system bin/"t3-plugins", "--prefix", testpath/"plugins", "install"
     system bin/"t3-plugins", "--prefix", testpath/"plugins", "doctor"
+    system bin/"t3-plugins", "--prefix", testpath/"plugins", "setup", "imps", "--root", testpath/"skills"
+    assert_path_exists testpath/"skills/t3-imps/SKILL.md"
     assert_match "prompt-builder", shell_output("#{bin}/t3-plugins list")
     system bin/"imps", "--help"
   end
