@@ -2,7 +2,6 @@ class T3Plugins < Formula
   desc "Provider-neutral workflows and file tools for T3 Code"
   homepage "https://github.com/seankoji-com/t3-plugins"
   url "https://github.com/seankoji-com/t3-plugins/releases/download/v0.3.1/t3-plugins-v0.3.1.tar.gz"
-  version "0.3.1"
   sha256 "1ece71969129328d4c1c7c3ce2f56097224a482e3d36f32bb33021351ca3ca6c"
   license "MIT"
   head "https://github.com/seankoji-com/t3-plugins.git", branch: "master"
