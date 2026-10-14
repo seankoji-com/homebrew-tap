@@ -1,8 +1,8 @@
 class T3Plugins < Formula
-  desc "Provider-neutral workflows and file tools for T3 Code"
+  desc "Provider-neutral agent workflows for T3 Code"
   homepage "https://github.com/seankoji-com/t3-plugins"
-  url "https://github.com/seankoji-com/t3-plugins/releases/download/v0.4.0/t3-plugins-v0.4.0.tar.gz"
-  sha256 "91247661645558550a701576f92fed8b34a6d761c3cf7001b8a0bcde6967e574"
+  url "https://github.com/seankoji-com/t3-plugins/releases/download/v0.5.0/t3-plugins-v0.5.0.tar.gz"
+  sha256 "29ddddc156e1ec0b493d202a9fc6e4ea66c6139b19105c384552d1fbef23ed1d"
   license "MIT"
   head "https://github.com/seankoji-com/t3-plugins.git", branch: "master"
 
@@ -40,7 +40,7 @@ class T3Plugins < Formula
     system bin/"t3-plugins", "--prefix", testpath/"plugins", "doctor"
     system bin/"t3-plugins", "--prefix", testpath/"plugins", "setup", "imps", "--root", testpath/"skills"
     assert_path_exists testpath/"skills/t3-imps/SKILL.md"
-    assert_match(/^imps\s/, shell_output("#{bin}/t3-plugins list"))
+    assert_match "agent-tuneup", shell_output("#{bin}/t3-plugins list")
     system bin/"imps", "--help"
   end
 end
