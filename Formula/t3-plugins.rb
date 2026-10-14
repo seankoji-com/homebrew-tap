@@ -40,7 +40,7 @@ class T3Plugins < Formula
     system bin/"t3-plugins", "--prefix", testpath/"plugins", "doctor"
     system bin/"t3-plugins", "--prefix", testpath/"plugins", "setup", "imps", "--root", testpath/"skills"
     assert_path_exists testpath/"skills/t3-imps/SKILL.md"
-    assert_match "prompt-builder", shell_output("#{bin}/t3-plugins list")
+    assert_match(/^imps\s/, shell_output("#{bin}/t3-plugins list"))
     system bin/"imps", "--help"
   end
 end
