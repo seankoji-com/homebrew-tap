@@ -1,8 +1,8 @@
 class T3Plugins < Formula
   desc "Provider-neutral agent workflows for T3 Code"
   homepage "https://github.com/seankoji-com/t3-plugins"
-  url "https://github.com/seankoji-com/t3-plugins/releases/download/v0.11.0/t3-plugins-v0.11.0.tar.gz"
-  sha256 "9802028756c4bc2381c192ed711752ce4208e896af65c99fb1d6717731db0aad"
+  url "https://github.com/seankoji-com/t3-plugins/releases/download/v0.11.1/t3-plugins-v0.11.1.tar.gz"
+  sha256 "04d1a5d4f95282f101e562f13c3db9266e04622f39018831bbb38cecc26d8235"
   license "MIT"
   head "https://github.com/seankoji-com/t3-plugins.git", branch: "master"
 
