@@ -76,6 +76,8 @@ jobs:
             echo "No formulae found in Formula/"
             exit 1
           fi
+          # Audit evaluates formula Ruby; trust only the formulae under test.
+          brew trust --formula "${formulae[@]}"
           brew audit --strict --online "${formulae[@]}"
 
   test:
