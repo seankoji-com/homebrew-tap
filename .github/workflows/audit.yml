@@ -76,6 +76,8 @@ jobs:
             echo "No formulae found in Formula/"
             exit 1
           fi
+          # Permit audit to load only the formulae from this checked-out tap.
+          brew trust --formula "${formulae[@]}"
           brew audit --strict --online "${formulae[@]}"
 
   test:
