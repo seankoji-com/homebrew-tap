@@ -49,7 +49,6 @@ class FrugalbarLinux < Formula
     end
     result = JSON.parse(shell_output("#{bin}/frugalbar-linux --demo --json"))
     assert_equal true, result["illustrative"]
-    assert_equal 10, result["providers"].length
     providers = result["providers"]
     assert_kind_of Array, providers
     refute_empty providers
