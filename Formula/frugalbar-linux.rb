@@ -44,10 +44,18 @@ class FrugalbarLinux < Formula
     ENV.prepend_path "PATH", HOMEBREW_PREFIX/"bin"
     ENV["XDG_DATA_HOME"] = (testpath/"data").to_s
     ENV["XDG_CONFIG_HOME"] = (testpath/"config").to_s
-    assert_match version.to_s, shell_output("#{bin}/frugalbar-linux --version")
+    Dir.chdir(testpath) do
+      assert_match version.to_s, shell_output("#{bin}/frugalbar-linux --version")
+    end
     result = JSON.parse(shell_output("#{bin}/frugalbar-linux --demo --json"))
     assert_equal true, result["illustrative"]
     assert_equal 10, result["providers"].length
+    providers = result["providers"]
+    assert_kind_of Array, providers
+    refute_empty providers
+    %w[provider name windows balances plan state].each do |key|
+      assert providers.first.key?(key), "demo provider is missing #{key}"
+    end
     system opt_bin/"frugalbar-linux", "--install-desktop"
     assert_match "Exec=\"#{opt_bin}/frugalbar-linux\"\n",
                  (testpath/"data/applications/frugalbar-linux.desktop").read
@@ -60,8 +68,10 @@ class FrugalbarLinux < Formula
       config.set_autostart(True)
       entry = config.config_root() / "autostart/frugalbar-linux.desktop"
       assert 'Exec="#{opt_bin}/frugalbar-linux" --hidden\\n' in entry.read_text()
+      gi.require_version("Gtk", "3.0")
       gi.require_version("GdkPixbuf", "2.0")
-      from gi.repository import GdkPixbuf
+      gi.require_version("Secret", "1")
+      from gi.repository import GdkPixbuf, Gtk, Secret
       GdkPixbuf.Pixbuf.new_from_file_at_scale("#{libexec}/frugalbar_linux/assets/openai.svg", 26, 26, True)
     PY
   end

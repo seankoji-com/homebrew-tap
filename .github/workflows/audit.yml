@@ -122,6 +122,7 @@ jobs:
             exit 1
           fi
           failed=0
+          tested=0
           for f in "${formulae[@]}"; do
             formula_name=$(basename "$f" .rb)
             # Match the formula's declared OS requirements. Portable formulae
@@ -137,6 +138,7 @@ jobs:
               echo "Skipping $formula_name on ${{ matrix.platform }} due to its OS requirement"
               continue
             fi
+            tested=$((tested + 1))
             echo "Testing formula: $formula_name"
             if ! brew install --formula --build-from-source "seankoji-com/tap/$formula_name"; then
               echo "Failed to install $formula_name"
@@ -148,4 +150,8 @@ jobs:
               failed=1
             fi
           done
+          if [ "$tested" -eq 0 ]; then
+            echo "No formulae are testable on $RUNNER_OS"
+            exit 1
+          fi
           exit "$failed"
