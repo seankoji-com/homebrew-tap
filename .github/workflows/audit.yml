@@ -82,13 +82,27 @@ jobs:
 
   test:
     needs: audit
-    timeout-minutes: 30
-    name: Test Formulae
-    # Pinned: Formula/frugalbar.rb requires macOS Sequoia on arm64.
-    runs-on: macos-15
+    timeout-minutes: 9
+    name: Test Formulae (${{ matrix.platform }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # FrugalBar for macOS requires Sequoia on arm64.
+          - platform: macos
+            runner: macos-15
+          - platform: linux
+            runner: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Add Linux Homebrew to PATH
+        if: runner.os == 'Linux'
+        run: |
+          echo /home/linuxbrew/.linuxbrew/bin >> "$GITHUB_PATH"
+          echo /home/linuxbrew/.linuxbrew/sbin >> "$GITHUB_PATH"
 
       # Homebrew refuses to install formula files outside a tap, so register
       # this checkout as the seankoji-com/tap tap and install by tap name.
@@ -108,8 +122,23 @@ jobs:
             exit 1
           fi
           failed=0
+          tested=0
           for f in "${formulae[@]}"; do
             formula_name=$(basename "$f" .rb)
+            # Match the formula's declared OS requirements. Portable formulae
+            # run on both platforms; a requirement failure still fails install.
+            brew trust --formula "seankoji-com/tap/$formula_name"
+            formula_json=$(brew info --json=v2 --formula "seankoji-com/tap/$formula_name")
+            compatible=$(jq -r --arg os "${{ matrix.platform }}" '
+              [.formulae[0].requirements[].name] as $requirements |
+              if $os == "linux" then ($requirements | index("macos") | not)
+              else ($requirements | index("linux") | not) end
+            ' <<< "$formula_json")
+            if [ "$compatible" = false ]; then
+              echo "Skipping $formula_name on ${{ matrix.platform }} due to its OS requirement"
+              continue
+            fi
+            tested=$((tested + 1))
             echo "Testing formula: $formula_name"
             if ! brew install --formula --build-from-source "seankoji-com/tap/$formula_name"; then
               echo "Failed to install $formula_name"
@@ -121,4 +150,8 @@ jobs:
               failed=1
             fi
           done
+          if [ "$tested" -eq 0 ]; then
+            echo "No formulae are testable on $RUNNER_OS"
+            exit 1
+          fi
           exit "$failed"
