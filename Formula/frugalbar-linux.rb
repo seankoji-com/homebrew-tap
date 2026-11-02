@@ -44,7 +44,9 @@ class FrugalbarLinux < Formula
     system formula_opt_bin("python@3.15")/"python3.15", "-I", "-c", <<~PY
       import gi
       gi.require_version("GdkPixbuf", "2.0")
-      from gi.repository import GdkPixbuf
+      gi.require_version("Secret", "1")
+      from gi.repository import GdkPixbuf, Secret
+      assert Secret.Service
       GdkPixbuf.Pixbuf.new_from_file_at_scale("#{libexec}/frugalbar_linux/assets/openai.svg", 26, 26, True)
     PY
   end
