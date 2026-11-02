@@ -44,14 +44,16 @@ class FrugalbarLinux < Formula
     ENV.prepend_path "PATH", HOMEBREW_PREFIX/"bin"
     ENV["XDG_DATA_HOME"] = (testpath/"data").to_s
     ENV["XDG_CONFIG_HOME"] = (testpath/"config").to_s
-    Dir.chdir(testpath) do
+    (testpath/"frugalbar_linux.py").write "raise RuntimeError('cwd shadowed the installed package')\n"
+    result = Dir.chdir(testpath) do
       assert_match version.to_s, shell_output("#{bin}/frugalbar-linux --version")
+      JSON.parse(shell_output("#{bin}/frugalbar-linux --demo --json"))
     end
-    result = JSON.parse(shell_output("#{bin}/frugalbar-linux --demo --json"))
     assert_equal true, result["illustrative"]
     providers = result["providers"]
     assert_kind_of Array, providers
     refute_empty providers
+    assert_kind_of Hash, providers.first
     %w[provider name windows balances plan state].each do |key|
       assert providers.first.key?(key), "demo provider is missing #{key}"
     end
@@ -71,7 +73,11 @@ class FrugalbarLinux < Formula
       gi.require_version("GdkPixbuf", "2.0")
       gi.require_version("Secret", "1")
       from gi.repository import GdkPixbuf, Gtk, Secret
-      GdkPixbuf.Pixbuf.new_from_file_at_scale("#{libexec}/frugalbar_linux/assets/openai.svg", 26, 26, True)
+      path = "#{libexec}/frugalbar_linux/assets/openai.svg"
+      loader, width, height = GdkPixbuf.Pixbuf.get_file_info(path)
+      if loader is None or width < 1 or height < 1:
+          raise RuntimeError("No gdk-pixbuf SVG loader: " + path)
+      GdkPixbuf.Pixbuf.new_from_file_at_scale(path, 26, 26, True)
     PY
   end
 end
