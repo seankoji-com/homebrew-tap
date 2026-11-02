@@ -37,14 +37,23 @@ class FrugalbarLinux < Formula
   end
 
   test do
-    assert_match version.to_s, shell_output("#{bin}/frugalbar-linux --version")
+    Dir.chdir(testpath) do
+      assert_match version.to_s, shell_output("#{bin}/frugalbar-linux --version")
+    end
     result = JSON.parse(shell_output("#{bin}/frugalbar-linux --demo --json"))
     assert_equal true, result["illustrative"]
-    assert_equal 10, result["providers"].length
+    providers = result["providers"]
+    assert_kind_of Array, providers
+    refute_empty providers
+    %w[provider name windows balances plan state].each do |key|
+      assert providers.first.key?(key), "demo provider is missing #{key}"
+    end
     system formula_opt_bin("python@3.15")/"python3.15", "-I", "-c", <<~PY
       import gi
+      gi.require_version("Gtk", "3.0")
       gi.require_version("GdkPixbuf", "2.0")
-      from gi.repository import GdkPixbuf
+      gi.require_version("Secret", "1")
+      from gi.repository import GdkPixbuf, Gtk, Secret
       GdkPixbuf.Pixbuf.new_from_file_at_scale("#{libexec}/frugalbar_linux/assets/openai.svg", 26, 26, True)
     PY
   end

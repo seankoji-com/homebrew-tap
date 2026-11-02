@@ -83,12 +83,23 @@ jobs:
   test:
     needs: audit
     timeout-minutes: 30
-    name: Test Formulae
-    # Pinned: Formula/frugalbar.rb requires macOS Sequoia on arm64.
-    runs-on: macos-15
+    name: Test Formulae (${{ matrix.platform }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macOS
+            os: macos-15
+          - platform: Linux
+            os: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Add Homebrew to PATH
+        if: runner.os == 'Linux'
+        run: echo "/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin" >> "$GITHUB_PATH"
 
       # Homebrew refuses to install formula files outside a tap, so register
       # this checkout as the seankoji-com/tap tap and install by tap name.
@@ -108,8 +119,20 @@ jobs:
             exit 1
           fi
           failed=0
+          tested=0
+          linux_only='^[[:space:]]*depends_on[[:space:]]+:linux([[:space:]]|$)'
+          macos_only='^[[:space:]]*depends_on[[:space:]]+(macos:|:macos)([[:space:]]|$)'
           for f in "${formulae[@]}"; do
             formula_name=$(basename "$f" .rb)
+            if [ "$RUNNER_OS" = "macOS" ] && grep -Eq "$linux_only" "$f"; then
+              echo "Skipping $formula_name: Linux-only formula"
+              continue
+            fi
+            if [ "$RUNNER_OS" = "Linux" ] && grep -Eq "$macos_only" "$f"; then
+              echo "Skipping $formula_name: macOS-only formula"
+              continue
+            fi
+            tested=$((tested + 1))
             echo "Testing formula: $formula_name"
             if ! brew install --formula --build-from-source "seankoji-com/tap/$formula_name"; then
               echo "Failed to install $formula_name"
@@ -121,4 +144,8 @@ jobs:
               failed=1
             fi
           done
+          if [ "$tested" -eq 0 ]; then
+            echo "No formulae are testable on $RUNNER_OS"
+            exit 1
+          fi
           exit "$failed"
