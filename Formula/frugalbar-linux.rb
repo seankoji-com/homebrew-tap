@@ -1,0 +1,51 @@
+# frozen_string_literal: true
+
+# FrugalBar for Linux: AI usage and balances in the Cinnamon tray.
+class FrugalbarLinux < Formula
+  desc "AI subscription usage and balances in the Linux Mint Cinnamon tray"
+  homepage "https://github.com/seankoji-com/frugalbar-linux"
+  url "https://github.com/seankoji-com/frugalbar-linux/archive/refs/tags/v0.1.0.tar.gz"
+  sha256 "8c7d02b6bd4357c6b16a75cfd8f027c166d8274a1f1bcd79491e06770ff2f208"
+  license "MIT"
+
+  depends_on "gtk+3"
+  depends_on "librsvg"
+  depends_on "libsecret"
+  depends_on :linux
+  depends_on "pygobject3"
+  depends_on "python@3.15"
+
+  def install
+    libexec.install "frugalbar_linux"
+    libexec.install "packaging/launch.py"
+    (bin/"frugalbar-linux").write <<~SH
+      #!/bin/sh
+      export PATH="#{HOMEBREW_PREFIX}/bin:#{HOMEBREW_PREFIX}/sbin:$PATH"
+      exec "#{formula_opt_bin("python@3.15")}/python3.15" -I "#{libexec}/launch.py" "$@"
+    SH
+  end
+
+  def caveats
+    <<~EOS
+      Launch frugalbar-linux inside your Cinnamon desktop session.
+      Add it to the application menu with: frugalbar-linux --install-desktop
+      Settings can enable login startup and read-only CLI credential discovery.
+      Keys saved in Settings use your desktop Secret Service login keyring.
+      Tray support targets Cinnamon on X11. If no tray host is available,
+      FrugalBar stays usable as a normal window. Do not run it with sudo.
+    EOS
+  end
+
+  test do
+    assert_match version.to_s, shell_output("#{bin}/frugalbar-linux --version")
+    result = JSON.parse(shell_output("#{bin}/frugalbar-linux --demo --json"))
+    assert_equal true, result["illustrative"]
+    assert_equal 10, result["providers"].length
+    system formula_opt_bin("python@3.15")/"python3.15", "-I", "-c", <<~PY
+      import gi
+      gi.require_version("GdkPixbuf", "2.0")
+      from gi.repository import GdkPixbuf
+      GdkPixbuf.Pixbuf.new_from_file_at_scale("#{libexec}/frugalbar_linux/assets/openai.svg", 26, 26, True)
+    PY
+  end
+end
